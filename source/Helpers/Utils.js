@@ -28,30 +28,20 @@ const Utils = {
 		}
 		return !(typeof data === 'object' && Object.keys(data).length > 0);
 	},
-
 	/**
-	 * To get userId
-	 * @param request
-	 * @returns {*}
+	 * To get id and role
+	 * @param consumerUsername
+	 * @returns {string}
 	 */
-	getUserId: (request) => {
-		return request?.headers['x-consumer-username'].split('_')[1];
+	getIdAndRole: (consumerUsername) => {
+		return (consumerUsername || '').split('_');
 	},
-
 	/**
 	 * To get short id
 	 * @returns {string}
 	 */
 	getShortId: () => {
 		return ShortId();
-	},
-	/**
-	 * To hash password
-	 * @param input
-	 * @returns {string}
-	 */
-	createHashPwd: (input) => {
-		return Crypto.createHash('md5').update(input).digest('hex');
 	},
 	/**
 	 * To generate verification code
@@ -183,6 +173,7 @@ const Utils = {
 				try {
 					postData['body'] = JSON.stringify(options?.body);
 				} catch (error) {
+					// eslint-disable-next-line no-console
 					console.log(error);
 					return {error: 'unable to stringify body'};
 				}

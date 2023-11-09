@@ -9,10 +9,13 @@ const userSchema = new DataBase.Schema({
 			type: String
 		}
 	},
-	user_id: String,
+	user_id: {
+		type: String,
+		unique: true
+	},
 	role: {
 		type: String,
-		enum: ['admin','employee'],
+		enum: ['admin', 'manager', 'employee'],
 		default: 'employee'
 	},
 	address: {
@@ -29,6 +32,7 @@ const userSchema = new DataBase.Schema({
 		},
 		pincode: {type: String, default: ''}
 	},
+	password: {type: String, default: '1234'},
 	dob: {type: Date},
 	gender: {
 		type: String,
@@ -41,13 +45,10 @@ const userSchema = new DataBase.Schema({
 		is_verified: {type: Boolean, default: false}
 	},
 	email: {
-		primary: {type: String, default: ''},
+		primary: {type: String, default: '', unique: true},
 		is_verified: {type: Boolean, default: false}
 	},
 	position: {type: String, default: ''},
-	password: {
-		type: String
-	},
 	status: {type: String, default: 'active'},
 });
 

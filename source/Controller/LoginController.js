@@ -1,7 +1,7 @@
-const {createHashPwd} = require('../Helpers/Utils');
 const passport = require('passport');
 const UserModel = require('../Models/UserModel');
 const LocalStrategy = require('passport-local').Strategy;
+
 const AuthController = {
 	/**
 	 * Admin Login
@@ -9,8 +9,9 @@ const AuthController = {
 	 * @param loginDevice
 	 * @returns {Promise<{data: {admin: {admin_id: (number|*), auth_token: *}}, error: boolean, message: string}|{error: boolean, message: string}|{error: boolean, message: *}>}
 	 */
-	login: async (userLoginDetails) => {
+	async login(userLoginDetails) {
 		try {
+			// Configure the local strategy
 			passport.use(
 				'admin-local',
 				new LocalStrategy(
@@ -20,45 +21,42 @@ const AuthController = {
 					},
 					async (email, password, done) => {
 						try {
-							let queryOptions = {
-								condition: {
-									email: email,
-									password: createHashPwd(password),
-									status: 'active'
-								},
-								projection: {
-									last_login: 1,
-									verification_code: 1,
-									phone: 1,
-									createdAt: 1,
-									admin_id: 1,
-									email: 1
-								},
-								options: {
-									lean: false
-								}
-							};
-							const admin = await UserModel.find(queryOptions);
+							// Find the admin with the given email and password
+							const admin = await UserModel.findOne({
+								email: email,
+								password: password,
+								status: 'active'
+							});
 
 							if (!admin) {
 								return done(undefined, false, {message: 'Invalid Credentials'});
 							}
-							// ... (The rest of the authentication logic as in your original code)
+
+							// Return the authenticated admin
+							return done(undefined, admin);
 						} catch (error) {
+							// eslint-disable-next-line no-console
+							console.error(error.message);
 							return done(error);
 						}
 					}
 				)
 			);
+
 			// Authenticate the user using passport
-			passport.authenticate('admin-local', (error, user, info) => {
-				if (error) {
-					return {error: true, message: error.message || 'Something Went Wrong!'};
-				}
-				if (!user) {
-					return {error: true, message: info.message || 'Invalid Credentials'};
-				}
-			})(userLoginDetails.email, userLoginDetails.password);
+			const loginResult = await passport.authenticate('admin-local')(
+				userLoginDetails.email,
+				userLoginDetails.password
+			);
+			// eslint-disable-next-line no-console
+			console.log(loginResult);
+
+			if (loginResult.error) {
+				return {error: true, message: loginResult.message || 'Something Went Wrong!'};
+			}
+
+			// Handle successful authentication
+			// ...
 		} catch (error) {
 			return {error: true, message: error.message || 'Something Went Wrong!'};
 		}
